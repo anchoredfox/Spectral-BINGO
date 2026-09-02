@@ -370,69 +370,76 @@
 
     function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
-    // 1. Load the official Firebase Database tools dynamically
-    import { initializeApp } from "https://gstatic.com";
-    import { getDatabase, ref, set, onValue } from "https://gstatic.com";
+    <!-- 1. Load the traditional Firebase tools your browser safely allows -->
+<script src="https://gstatic.com"></script>
+<script src="https://gstatic.com"></script>
 
-    // 2. Link straight to your free OSRS Bingo database URL
-    const firebaseConfig = {
-      databaseURL: "https://firebaseio.com"
-    };
+<script>
+  // 2. Link directly to your free OSRS Bingo database URL
+  const firebaseConfig = {
+    databaseURL: "https://firebaseio.com"
+  };
 
-    // 3. Connect your website layout to the live data stream
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
+  // 3. Connect using traditional global variables (Bypasses browser blocks)
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+  const masterBoardRef = database.ref('tournament/masterBoard');
+  const teamsRef = database.ref('tournament/teamsData');
 
-    // 4. Shuffles a fresh board layout and drops it onto the database cloud
-    function generateNewCloudBoard() {
-      const nonPvm = shuffle(nonPvmTasks).slice(0, 5).map(t => ({ text: t, type: 'Skilling' }));
-      const pvm = shuffle(pvmTasks).slice(0, 20).map(t => ({ text: t, type: 'PvM' }));
-      const freshlyShuffledBoard = shuffle([...nonPvm, ...pvm]);
+  // 4. Shuffles a fresh board layout and drops it onto the database cloud
+  function generateNewCloudBoard() {
+    const nonPvm = shuffle(nonPvmTasks).slice(0, 5).map(t => ({ text: t, type: 'Skilling' }));
+    const pvm = shuffle(pvmTasks).slice(0, 20).map(t => ({ text: t, type: 'PvM' }));
+    const freshlyShuffledBoard = shuffle([...nonPvm, ...pvm]);
 
-      // Push this exact matching tile set to the cloud database
-      set(ref(database, 'tournament/masterBoard'), freshlyShuffledBoard);
-      
-      // Wipe out any old checked boxes for every team so everyone resets clean
-      teams.forEach(t => t.marked = {});
-      set(ref(database, 'tournament/teamsData'), teams);
-    }
+    // Push this exact matching tile set to the cloud database
+    masterBoardRef.set(freshlyShuffledBoard);
+    
+    // Wipe out any old checked boxes for every team so everyone resets clean
+    teams.forEach(t => t.marked = {});
+    teamsRef.set(teams);
+  }
 
-    // 5. This functions as your new multiplayer master configuration engine
-    function initMasterBoard() {
-      // Listen for the Master Board layout from Firebase
-      onValue(ref(database, 'tournament/masterBoard'), (snapshot) => {
-        const cloudBoardData = snapshot.val();
-        if (cloudBoardData) {
-          masterBoard = cloudBoardData;
-          if (typeof renderBoard === 'function') renderBoard();
-        } else {
-          // If the database is completely empty (first run), make a fresh layout
-          generateNewCloudBoard();
-        }
-      });
-
-      // Listen for any Team updates, tile marks, name changes, or color picks
-      onValue(ref(database, 'tournament/teamsData'), (snapshot) => {
-        const cloudTeams = snapshot.val();
-        if (cloudTeams) {
-          teams = cloudTeams;
-          if (typeof renderTabs === 'function') renderTabs();
-          if (typeof renderModPanel === 'function') renderModPanel();
-          if (typeof updateTheme === 'function') updateTheme();
-          if (typeof renderBoard === 'function') renderBoard();
-        }
-      });
-    }
-
-    // Override your old local storage function to update Firebase instead
-    function saveStateToLocalStorage() {
-      if (typeof database !== 'undefined') {
-        set(ref(database, 'tournament/teamsData'), teams);
+  // 5. This functions as your new multiplayer master configuration engine
+  function initMasterBoard() {
+    // Listen for the Master Board layout from Firebase
+    masterBoardRef.on('value', (snapshot) => {
+      const cloudBoardData = snapshot.val();
+      if (cloudBoardData) {
+        masterBoard = cloudBoardData;
+        if (typeof renderBoard === 'function') renderBoard();
+      } else {
+        // If the database is completely empty (first run), make a fresh layout
+        generateNewCloudBoard();
       }
-    }
+    });
 
-    // Instantly activate the cloud listener lines
-    initMasterBoard();
+    // Listen for any Team updates, tile marks, name changes, or color picks
+    teamsRef.on('value', (snapshot) => {
+      const cloudTeams = snapshot.val();
+      if (cloudTeams) {
+        teams = cloudTeams;
+        if (typeof renderTabs === 'function') renderTabs();
+        if (typeof renderModPanel === 'function') renderModPanel();
+        if (typeof updateTheme === 'function') updateTheme();
+        if (typeof renderBoard === 'function') renderBoard();
+      }
+    });
+  }
+
+  // Override your old local storage function to update Firebase instead
+  function saveStateToLocalStorage() {
+    if (typeof database !== 'undefined') {
+      teamsRef.set(teams);
+    }
+  }
+
+  // Instantly activate the cloud listener lines
+  initMasterBoard();
+  
+  // Make your reset function globally available to buttons
+  window.generateNewCloudBoard = generateNewCloudBoard;
+</script>
 
     /* 1. MASTER THEME CONTROLLER: Sets a neutral OSRS dark wood style boundary tint on startup overview */
     function updateTheme() {
