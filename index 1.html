@@ -575,21 +575,28 @@
     }
 
     /* Closes Mod Drawer and Safely Scrolls Focus Back to Main View Window */
-    function saveAndCloseMod() {
-      document.getElementById('modPanel').style.display = 'none';
-      
-      // RESETS SECURITY: Erases temporary session token so password is demanded on next click
-      isModAuthenticated = false;
-      
-      // PERSISTENCE LAYER: Securely commits all updates to local hard drive arrays
-      if (typeof saveStateToLocalStorage === 'function') { saveStateToLocalStorage(); }
-      
-      updateTheme(); 
-      renderTabs(); 
-      renderBoard();
-      
-      document.getElementById('captureArea').scrollIntoView({ behavior: 'smooth' });
-    }
+function saveAndCloseMod() {
+  // === PASTE IT DIRECTLY HERE ===
+  if (typeof firebase !== 'undefined' && firebase.database) {
+    firebase.database().ref('tournament/teamsData').set(teams);
+    console.log("Mod panel modifications explicitly uploaded to Firebase!");
+  }
+  // ==============================
+
+  document.getElementById('modPanel').style.display = 'none';
+  
+  // RESETS SECURITY: Erases temporary session token so password is demanded on next click
+  isModAuthenticated = false;
+  
+  // PERSISTENCE LAYER: Securely commits all updates to local hard drive arrays
+  if (typeof saveStateToLocalStorage === 'function') { saveStateToLocalStorage(); }
+  
+  updateTheme(); 
+  renderTabs(); 
+  renderBoard();
+  
+  document.getElementById('captureArea').scrollIntoView({ behavior: 'smooth' });
+}
 
     function renderModPanel() {
       const container = document.getElementById('teamEditorList');
@@ -721,7 +728,7 @@
         }
       }).catch(function(e) { console.log("Local Quill 8 font fallback loaded."); });
     })();
-  function initMasterBoard() {
+  function generateNewCloudBoard() {
       const shuffledSkilling = shuffle(nonPvmTasks).slice(0, 5).map(t => ({ text: t, type: 'Skilling' }));
       const shuffledPvm = shuffle(pvmTasks).slice(0, 20).map(t => ({ text: t, type: 'PvM' }));
       
@@ -734,28 +741,77 @@
       
       const basePattern = shuffle(validPatterns)[0];
       const rowOrder = shuffle([0, 1, 2, 3, 4]);
-      masterBoard = new Array(25).fill(null);
+      const freshlyShuffledBoard = new Array(25).fill(null);
       
       for (let i = 0; i < 5; i++) {
         const row = rowOrder[i];
         const col = basePattern[i];
-        masterBoard[(row * 5) + col] = shuffledSkilling[i];
+        freshlyShuffledBoard[(row * 5) + col] = shuffledSkilling[i];
       }
       
       let pvmPointer = 0;
       for (let i = 0; i < 25; i++) {
-        if (masterBoard[i] === null) {
-          masterBoard[i] = shuffledPvm[pvmPointer++];
+        if (freshlyShuffledBoard[i] === null) {
+          freshlyShuffledBoard[i] = shuffledPvm[pvmPointer++];
         }
       }
-      saveStateToLocalStorage();
+
+      // Push this exact matching tile set straight up to the Firebase Cloud
+      if (typeof firebase !== 'undefined' && firebase.database) {
+        firebase.database().ref('tournament/masterBoard').set(freshlyShuffledBoard);
+        
+        // Clear out any old checked boxes for a perfectly fresh slate
+        teams.forEach(t => t.marked = {});
+        firebase.database().ref('tournament/teamsData').set(teams);
+      }
     }
 
-    /* 2. PERSISTENCE ACTIONS: Securely auto-saves clicks to your browser storage memory bank */
+    // 2. Continuous real-time listener for your tournament data
+    function initMasterBoard() {
+      if (typeof firebase === 'undefined' || !firebase.database) {
+        console.log("Waiting for Firebase configuration to initialize...");
+        return;
+      }
+
+      // Listen continuously for the Master Board matrix array
+      firebase.database().ref('tournament/masterBoard').on('value', (snapshot) => {
+        const cloudBoardData = snapshot.val();
+        if (cloudBoardData) {
+          masterBoard = cloudBoardData;
+          // Syncs to local cache just in case back-ups are needed
+          localStorage.setItem('spectral_bingo_board_cache', JSON.stringify(masterBoard));
+          if (typeof renderBoard === 'function') renderBoard();
+        } else {
+          // If the cloud database is completely blank, roll the very first layout
+          generateNewCloudBoard();
+        }
+      });
+
+      // Listen continuously for team updates, custom names, and tile checks
+      firebase.database().ref('tournament/teamsData').on('value', (snapshot) => {
+        const cloudTeams = snapshot.val();
+        if (cloudTeams) {
+          teams = cloudTeams;
+          localStorage.setItem('spectral_bingo_teams_cache', JSON.stringify(teams));
+          if (typeof renderTabs === 'function') renderTabs();
+          if (typeof renderModPanel === 'function') renderModPanel();
+          if (typeof updateTheme === 'function') updateTheme();
+          if (typeof renderBoard === 'function') renderBoard();
+        }
+      });
+    }
+
+    // 3. Override your old local storage function to safely write updates to Firebase
     function saveStateToLocalStorage() {
       localStorage.setItem('spectral_bingo_teams_cache', JSON.stringify(teams));
       localStorage.setItem('spectral_bingo_board_cache', JSON.stringify(masterBoard));
+      if (typeof firebase !== 'undefined' && firebase.database) {
+        firebase.database().ref('tournament/teamsData').set(teams);
+      }
     }
+
+    // Boot up the network lines instantly
+    initMasterBoard();
 
     function confirmReroll() {
       if (!isModAuthenticated) {
@@ -770,8 +826,14 @@
       }
     }
 
-    /* 3. NEW FEATURE: Save Progress & Exit Button Logic */
+   /* 3. NEW FEATURE: Save Progress & Exit Button Logic */
     function exitToMainScreen() {
+      // Direct Cloud Upload for Main Screen Exit Save
+      if (typeof firebase !== 'undefined' && firebase.database) {
+        firebase.database().ref('tournament/teamsData').set(teams);
+        console.log("Main screen progress explicitly uploaded to Firebase!");
+      }
+
       // 1. If a team is currently being viewed, forcefully clear its passcode session memory slot
       if (activeTeamId !== null) {
         unlockedTeams[activeTeamId] = false;
@@ -792,20 +854,6 @@
       // 5. Smoothly scrolls the window orientation layout directly back up to your banner header top
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-
-    /* 4. SEAMLESS AUDIO PLUGINS: Repaired controller maps for your buttons */
-    const audio = document.getElementById('bgMusic');
-    function toggleAudio() {
-      if (!audio) return;
-      if (audio.paused) {
-        audio.play().catch(e => console.log("Audio waiting for user click focus."));
-        document.getElementById('playPauseBtn').innerText = "Pause";
-      } else {
-        audio.pause();
-        document.getElementById('playPauseBtn').innerText = "Play";
-      }
-    }
-
     function toggleMute() {
       if (!audio) return;
       audio.muted = !audio.muted;
