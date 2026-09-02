@@ -917,19 +917,37 @@ function saveAndCloseMod() {
     if (cachedTeams) teams = JSON.parse(cachedTeams);
     if (cachedBoard) masterBoard = JSON.parse(cachedBoard);
 
-    // Forces blank startup page configuration mode automatically on refresh
+     // Forces blank startup page configuration mode automatically on refresh
     activeTeamId = null;
+  </script>
 
-    // 4. SHUFFLE ENGINE (Generates a clean board layout if Firebase is ever blank)
+  <!-- Load official, traditional Firebase libraries -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://gstatic.com"></script>
+
+  <script>
+    // 1. LINK DIRECTLY TO YOUR DATABASE URL
+    const firebaseConfig = {
+      databaseURL: "https://firebaseio.com"
+    };
+
+    // 2. INITIALIZE CONNECTIVITY
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const masterBoardRef = database.ref('tournament/masterBoard');
+    const teamsRef = database.ref('tournament/teamsData');
+
+    // 3. COMPLETE MATRIX SHUFFLE ENGINE
     function generateNewCloudBoard() {
       const shuffledSkilling = shuffle(nonPvmTasks).slice(0, 5).map(t => ({ text: t, type: 'Skilling' }));
       const shuffledPvm = shuffle(pvmTasks).slice(0, 20).map(t => ({ text: t, type: 'PvM' }));
       
-      const validPatterns = [, [0, 3, 1, 4, 2], [0, 4, 3, 2, 1],
-, [1, 3, 0, 2, 4], [1, 4, 2, 3, 0],
-, [2, 3, 4, 0, 1], [2, 4, 0, 1, 3],
-, [3, 2, 4, 1, 0], [3, 4, 0, 2, 1],
-, [4, 2, 3, 0, 1], [4, 3, 1, 0, 2]
+      const validPatterns = [
+        [0, 2, 4, 1, 3], [0, 3, 1, 4, 2], [0, 4, 3, 2, 1],
+        [1, 2, 4, 0, 3], [1, 3, 0, 2, 4], [1, 4, 2, 3, 0],
+        [2, 1, 3, 4, 0], [2, 3, 4, 0, 1], [2, 4, 0, 1, 3],
+        [3, 1, 4, 0, 2], [3, 2, 4, 1, 0], [3, 4, 0, 2, 1],
+        [4, 1, 0, 3, 2], [4, 2, 3, 0, 1], [4, 3, 1, 0, 2]
       ];
       
       const basePattern = shuffle(validPatterns)[0];
@@ -949,17 +967,17 @@ function saveAndCloseMod() {
         }
       }
 
-      // Push layout array straight up to Firebase
+      // Update the central cloud database array
       masterBoardRef.set(freshlyShuffledBoard);
       
-      // Wipe old checked boxes for a fresh start
+      // Reset team checks to standard empty grids
       teams.forEach(t => t.marked = {});
       teamsRef.set(teams);
     }
 
-    // 5. THE LIVE MULTIPLAYER BACKEND LISTENERS
+    // 4. THE REAL-TIME MULTIPLAYER STATE SYNC ENGINE
     function initMasterBoard() {
-      // Continuously listen for the shared Master Board layout array
+      // Stream down the layout grid tasks to all screens
       masterBoardRef.on('value', (snapshot) => {
         const cloudBoardData = snapshot.val();
         if (cloudBoardData) {
@@ -967,12 +985,11 @@ function saveAndCloseMod() {
           localStorage.setItem('spectral_bingo_board_cache', JSON.stringify(masterBoard));
           if (typeof renderBoard === 'function') renderBoard();
         } else {
-          // If Firebase database is completely blank, roll the very first shared board
           generateNewCloudBoard();
         }
       });
 
-      // Continuously listen for team progress updates, custom names, and tile checks
+      // Stream down live checking boxes and title modifications to all screens
       teamsRef.on('value', (snapshot) => {
         const cloudTeams = snapshot.val();
         if (cloudTeams) {
@@ -986,7 +1003,7 @@ function saveAndCloseMod() {
       });
     }
 
-    // Override local storage actions to dynamically update Firebase on clicks
+    // Override old local saving functions to automatically broadcast data to Firebase
     function saveStateToLocalStorage() {
       localStorage.setItem('spectral_bingo_teams_cache', JSON.stringify(teams));
       localStorage.setItem('spectral_bingo_board_cache', JSON.stringify(masterBoard));
@@ -995,13 +1012,13 @@ function saveAndCloseMod() {
       }
     }
 
-    // 6. KICKSTART THE SYSTEM IMMEDIATELY
+    // 5. COMMENCE THE BOOT ENGINE
     initMasterBoard();
     updateTheme(); 
     renderTabs(); 
     renderBoard();
 
-    // Make the cloud functions available to buttons globally
+    // Map your resets globally to button actions
     window.generateNewCloudBoard = generateNewCloudBoard;
   </script>
 </body>
