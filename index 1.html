@@ -813,16 +813,19 @@ function saveAndCloseMod() {
     // Boot up the network lines instantly
     initMasterBoard();
 
-    function confirmReroll() {
+     function confirmReroll() {
       if (!isModAuthenticated) {
         const attempt = prompt("Enter Mod Codeword to Reroll Board:");
         if (attempt !== MOD_CODEWORD) { alert("Access Denied."); return; }
         isModAuthenticated = true;
       }
-      if (confirm("Reset layout for ALL teams? This wipes marked boxes and rolls a new 1-skill-per-line configuration.")) { 
-        teams.forEach(t => t.marked = {}); 
-        initMasterBoard(); 
-        exitToMainScreen();
+      if (confirm("Reset layout for ALL teams? This wipes marked boxes and rolls a new 1-skill-per-line configuration globally.")) { 
+        // Triggers the firebase function we built above to clear the data layout for everyone
+        generateNewCloudBoard(); 
+        activeTeamId = null; // Locks page view state back into secure launch layout
+        if (typeof updateTheme === 'function') updateTheme(); 
+        if (typeof renderTabs === 'function') renderTabs(); 
+        if (typeof renderBoard === 'function') renderBoard(); 
       }
     }
 
@@ -893,7 +896,22 @@ function saveAndCloseMod() {
       }).catch(function(e) { console.log("Quill 8 typography tracking online."); });
     })();
 
-    // Startup Cache Parsing Loader Hook
+  <script src="https://gstatic.com"></script>
+  <script src="https://gstatic.com"></script>
+
+  <script>
+    // 1. LINK TO YOUR DATABASE
+    const firebaseConfig = {
+      databaseURL: "https://spectral-interactive-bingo-default-rtdb.firebaseio.com"
+    };
+
+    // 2. INITIALIZE FIREBASE FIRST
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const masterBoardRef = database.ref('tournament/masterBoard');
+    const teamsRef = database.ref('tournament/teamsData');
+
+    // 3. STARTUP CACHE BACKUPS
     const cachedTeams = localStorage.getItem('spectral_bingo_teams_cache');
     const cachedBoard = localStorage.getItem('spectral_bingo_board_cache');
     if (cachedTeams) teams = JSON.parse(cachedTeams);
@@ -902,52 +920,89 @@ function saveAndCloseMod() {
     // Forces blank startup page configuration mode automatically on refresh
     activeTeamId = null;
 
-    if (!masterBoard || masterBoard.length === 0) { initMasterBoard(); }
-    updateTheme(); renderTabs(); renderBoard();
-  </script>
-<script type="module">
-  import { initializeApp } from "https://gstatic.com";
-  import { getDatabase, ref, set, onValue } from "https://gstatic.com";
+    // 4. SHUFFLE ENGINE (Generates a clean board layout if Firebase is ever blank)
+    function generateNewCloudBoard() {
+      const shuffledSkilling = shuffle(nonPvmTasks).slice(0, 5).map(t => ({ text: t, type: 'Skilling' }));
+      const shuffledPvm = shuffle(pvmTasks).slice(0, 20).map(t => ({ text: t, type: 'PvM' }));
+      
+      const validPatterns = [, [0, 3, 1, 4, 2], [0, 4, 3, 2, 1],
+, [1, 3, 0, 2, 4], [1, 4, 2, 3, 0],
+, [2, 3, 4, 0, 1], [2, 4, 0, 1, 3],
+, [3, 2, 4, 1, 0], [3, 4, 0, 2, 1],
+, [4, 2, 3, 0, 1], [4, 3, 1, 0, 2]
+      ];
+      
+      const basePattern = shuffle(validPatterns)[0];
+      const rowOrder = shuffle([0, 1, 2, 3, 4]);
+      const freshlyShuffledBoard = new Array(25).fill(null);
+      
+      for (let i = 0; i < 5; i++) {
+        const row = rowOrder[i];
+        const col = basePattern[i];
+        freshlyShuffledBoard[(row * 5) + col] = shuffledSkilling[i];
+      }
+      
+      let pvmPointer = 0;
+      for (let i = 0; i < 25; i++) {
+        if (freshlyShuffledBoard[i] === null) {
+          freshlyShuffledBoard[i] = shuffledPvm[pvmPointer++];
+        }
+      }
 
-  // Your exact database configuration link
-  const firebaseConfig = {
-    databaseURL: "https://spectral-interactive-bingo-default-rtdb.firebaseio.com"
-  };
+      // Push layout array straight up to Firebase
+      masterBoardRef.set(freshlyShuffledBoard);
+      
+      // Wipe old checked boxes for a fresh start
+      teams.forEach(t => t.marked = {});
+      teamsRef.set(teams);
+    }
 
-  // Connect your site to the live backend
-  const app = initializeApp(firebaseConfig);
-  const database = getDatabase(app);
-  const gameRef = ref(database, 'bingoGameState');
+    // 5. THE LIVE MULTIPLAYER BACKEND LISTENERS
+    function initMasterBoard() {
+      // Continuously listen for the shared Master Board layout array
+      masterBoardRef.on('value', (snapshot) => {
+        const cloudBoardData = snapshot.val();
+        if (cloudBoardData) {
+          masterBoard = cloudBoardData;
+          localStorage.setItem('spectral_bingo_board_cache', JSON.stringify(masterBoard));
+          if (typeof renderBoard === 'function') renderBoard();
+        } else {
+          // If Firebase database is completely blank, roll the very first shared board
+          generateNewCloudBoard();
+        }
+      });
 
-  // ==========================================
-  // EXAMPLE 1: HOST DRAWING A BINGO NUMBER
-  // ==========================================
-  // If you have a button that generates numbers, call this function inside its click event:
-  function broadcastNewNumber(drawnNumber) {
-    set(gameRef, {
-      lastCalledNumber: drawnNumber,
-      timestamp: Date.now()
-    });
-  }
+      // Continuously listen for team progress updates, custom names, and tile checks
+      teamsRef.on('value', (snapshot) => {
+        const cloudTeams = snapshot.val();
+        if (cloudTeams) {
+          teams = cloudTeams;
+          localStorage.setItem('spectral_bingo_teams_cache', JSON.stringify(teams));
+          if (typeof renderTabs === 'function') renderTabs();
+          if (typeof renderModPanel === 'function') renderModPanel();
+          if (typeof updateTheme === 'function') updateTheme();
+          if (typeof renderBoard === 'function') renderBoard();
+        }
+      });
+    }
 
-  // ==========================================
-  // EXAMPLE 2: LISTENING AND SYNCING THE DEVICE SCREENS
-  // ==========================================
-  // This automatically runs on your husband's screen the instant the database changes!
-  onValue(gameRef, (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-      // Find the text box on your page showing the called number and change its text
-      // (Change 'numberDisplayId' to whatever ID your HTML text element uses!)
-      const displayElement = document.getElementById('numberDisplayId');
-      if (displayElement) {
-        displayElement.innerText = "Current Number: " + data.lastCalledNumber;
+    // Override local storage actions to dynamically update Firebase on clicks
+    function saveStateToLocalStorage() {
+      localStorage.setItem('spectral_bingo_teams_cache', JSON.stringify(teams));
+      localStorage.setItem('spectral_bingo_board_cache', JSON.stringify(masterBoard));
+      if (typeof database !== 'undefined') {
+        teamsRef.set(teams);
       }
     }
-  });
 
-  // Expose your function globally so your existing buttons can call it
-  window.broadcastNewNumber = broadcastNewNumber;
-</script>
+    // 6. KICKSTART THE SYSTEM IMMEDIATELY
+    initMasterBoard();
+    updateTheme(); 
+    renderTabs(); 
+    renderBoard();
+
+    // Make the cloud functions available to buttons globally
+    window.generateNewCloudBoard = generateNewCloudBoard;
+  </script>
 </body>
 </html>
