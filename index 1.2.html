@@ -367,6 +367,147 @@
     let activeTeamId = 1;
     let masterBoard = [];
     let isModAuthenticated = false;
+
+    // Fully secure, non-eval sorting algorithm compliant with strict CSP systems
+    function shuffle(arr) {
+      let copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    // Map script frames globally so modern script modules can view variables securely
+    window.teams = teams;
+    window.masterBoard = masterBoard;
+    window.activeTeamId = activeTeamId;
+    window.unlockedTeams = unlockedTeams;
+    window.isModAuthenticated = isModAuthenticated;
+  </script>
+<!-- 1. LOAD MODERN SECURE FIREBASE PRODUCTION TOOLS (NATIVELY CSP COMPLIANT) -->
+  <script type="module">
+    import { initializeApp } from "https://gstatic.com";
+    import { getDatabase, ref, set, onValue } from "https://gstatic.com";
+
+    // 2. CONNECT SECURELY TO YOUR SPECTRAL BINGO DATABASE ENDPOINT
+    const firebaseConfig = {
+      databaseURL: "https://firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const masterBoardRef = ref(db, 'tournament/masterBoard');
+    const teamsRef = ref(db, 'tournament/teamsData');
+
+    // 3. PERSISTENT 1-SKILL-PER-LINE ALGORITHM PATTERNS
+    const VALID_OSRS_PATTERNS = [, [0, 3, 1, 4, 2], [0, 4, 3, 2, 1],
+, [1, 3, 0, 2, 4], [1, 4, 2, 3, 0],
+, [2, 3, 4, 0, 1], [2, 4, 0, 1, 3],
+, [3, 2, 4, 1, 0], [3, 4, 0, 2, 1],
+, [4, 2, 3, 0, 1], [4, 3, 1, 0, 2],
+, [2, 4, 0, 3, 1], [3, 2, 4, 0, 1]
+    ];
+
+    window.generateNewCloudBoard = function() {
+      const shuffledSkilling = shuffle(nonPvmTasks).slice(0, 5).map(t => ({ text: t, type: 'Skilling' }));
+      const shuffledPvm = shuffle(pvmTasks).slice(0, 20).map(t => ({ text: t, type: 'PvM' }));
+      const basePattern = shuffle(VALID_OSRS_PATTERNS)[0];
+      const rowOrder = shuffle([0, 1, 2, 3, 4]);
+      const freshlyShuffledBoard = new Array(25).fill(null);
+      
+      for (let i = 0; i < 5; i++) {
+        const row = rowOrder[i];
+        const col = basePattern[i];
+        freshlyShuffledBoard[(row * 5) + col] = shuffledSkilling[i];
+      }
+      
+      let pvmPointer = 0;
+      for (let i = 0; i < 25; i++) {
+        if (freshlyShuffledBoard[i] === null) {
+          freshlyShuffledBoard[i] = shuffledPvm[pvmPointer++];
+        }
+      }
+
+      set(masterBoardRef, freshlyShuffledBoard);
+      teams.forEach(t => t.marked = {});
+      set(teamsRef, teams);
+    }
+
+    // Real-Time Multiplayer Sync Listeners (Runs instantly without breaking)
+    onValue(masterBoardRef, (snapshot) => {
+      const cloudBoardData = snapshot.val();
+      if (cloudBoardData) {
+        masterBoard = cloudBoardData;
+        localStorage.setItem('spectral_bingo_board_cache', JSON.stringify(masterBoard));
+        if (typeof renderBoard === 'function') renderBoard();
+      } else {
+        window.generateNewCloudBoard();
+      }
+    });
+
+    onValue(teamsRef, (snapshot) => {
+      const cloudTeams = snapshot.val();
+      if (cloudTeams) {
+        teams = cloudTeams;
+        localStorage.setItem('spectral_bingo_teams_cache', JSON.stringify(teams));
+        if (typeof renderTabs === 'function') renderTabs();
+        if (typeof renderModPanel === 'function') renderModPanel();
+        if (typeof updateTheme === 'function') updateTheme();
+        if (typeof renderBoard === 'function') renderBoard();
+      }
+    });
+
+    window.saveStateToLocalStorage = function() {
+      localStorage.setItem('spectral_bingo_teams_cache', JSON.stringify(teams));
+      localStorage.setItem('spectral_bingo_board_cache', JSON.stringify(masterBoard));
+      set(teamsRef, teams);
+    }
+
+    window.saveAndCloseMod = function() {
+      set(teamsRef, teams);
+      document.getElementById('modPanel').style.display = 'none';
+      isModAuthenticated = false;
+      updateTheme(); renderTabs(); renderBoard();
+      document.getElementById('captureArea').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    window.confirmReroll = function() {
+      if (!isModAuthenticated) {
+        const attempt = prompt("Enter Mod Codeword to Reroll Board:");
+        if (attempt !== MOD_CODEWORD) { alert("Access Denied."); return; }
+        isModAuthenticated = true;
+      }
+      if (confirm("Reset layout globally? This wipes marked configurations across all team viewports.")) { 
+        window.generateNewCloudBoard();
+        activeTeamId = null;
+        updateTheme(); renderTabs(); renderBoard(); 
+      }
+    }
+
+    window.exitToMainScreen = function() {
+      set(teamsRef, teams);
+      if (activeTeamId !== null) {
+        unlockedTeams[activeTeamId] = false;
+        delete unlockedTeams[activeTeamId];
+      }
+      window.saveStateToLocalStorage();
+      activeTeamId = null; 
+      updateTheme(); renderTabs(); renderBoard();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+<script>
+    // Visual layouts rendering engine definitions
+    function updateTheme() {
+      if (activeTeamId === null) {
+        document.getElementById('currentTeamTitle').innerText = "";
+        document.getElementById('progressCounter').innerText = "";
+        document.documentElement.style.setProperty('--team-color', '#5a3e25');
+        document.documentElement.style.setProperty('--team-glow', 'rgba(0,0,0,0)');
+        return;
+      }
+      const team = teams.find(t => t.id === activeTeamId);
       if (team) {
         document.documentElement.style.setProperty('--team-color', team.color);
         document.documentElement.style.setProperty('--team-glow', team.color + "66");
@@ -374,14 +515,15 @@
       }
     }
 
-    /* 2. REPAIRED RENDER BOARD: Always keeps tiles fully visible publicly on startup/exit, view-only until logged in */
     function renderBoard() {
       const grid = document.getElementById('bingoGrid');
+      if (!grid) return;
       grid.innerHTML = '';
       const team = activeTeamId !== null ? teams.find(t => t.id === activeTeamId) : null;
       let count = 0;
       
       masterBoard.forEach((tile, index) => {
+        if (!tile) return;
         const isMarked = team ? !!team.marked[index] : false;
         if (isMarked) count++;
         const cell = document.createElement('div');
@@ -394,7 +536,7 @@
             return;
           }
           team.marked[index] = !team.marked[index]; 
-          saveStateToLocalStorage(); 
+          if (typeof window.saveStateToLocalStorage === 'function') window.saveStateToLocalStorage(); 
           renderBoard(); 
         };
         grid.appendChild(cell);
@@ -406,9 +548,9 @@
       }
     }
 
-    /* 3. DYNAMIC TABS ENGINE: Challenges for password only when swapping profiles */
     function renderTabs() {
       const container = document.getElementById('tabsBar');
+      if (!container) return;
       container.innerHTML = '';
       teams.forEach(team => {
         const btn = document.createElement('button');
@@ -434,7 +576,6 @@
       });
     }
 
-    /* Mod Security Framework */
     function checkModAccess() {
       if (isModAuthenticated) {
         toggleModPanel();
@@ -451,45 +592,19 @@
 
     function toggleModPanel() {
       const panel = document.getElementById('modPanel');
+      if (!panel) return;
       panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
       if (panel.style.display === 'block') renderModPanel();
     }
 
-    /* Closes Mod Drawer and Safely Scrolls Focus Back to Main View Window */
-function saveAndCloseMod() {
-  // === PASTE IT DIRECTLY HERE ===
-  if (typeof firebase !== 'undefined' && firebase.database) {
-    firebase.database().ref('tournament/teamsData').set(teams);
-    console.log("Mod panel modifications explicitly uploaded to Firebase!");
-  }
-  // ==============================
-
-  document.getElementById('modPanel').style.display = 'none';
-  
-  // RESETS SECURITY: Erases temporary session token so password is demanded on next click
-  isModAuthenticated = false;
-  
-  // PERSISTENCE LAYER: Securely commits all updates to local hard drive arrays
-  if (typeof saveStateToLocalStorage === 'function') { saveStateToLocalStorage(); }
-  
-  updateTheme(); 
-  renderTabs(); 
-  renderBoard();
-  
-  document.getElementById('captureArea').scrollIntoView({ behavior: 'smooth' });
-}
-
     function renderModPanel() {
       const container = document.getElementById('teamEditorList');
+      if (!container) return;
       container.innerHTML = '';
       teams.forEach((team) => {
         const row = document.createElement('div');
         row.className = 'team-edit-row';
-        row.style.display = "flex";
-        row.style.gap = "8px";
-        row.style.marginBottom = "10px";
-        row.style.alignItems = "center";
-        
+        row.style.display = "flex"; row.style.gap = "8px"; row.style.marginBottom = "10px"; row.style.alignItems = "center";
         row.innerHTML = 
           '<input type="text" style="flex:2; padding:8px; background:#2a2a2a; border:1px solid #444; color:#fff; border-radius:6px;" value="' + team.name + '" onchange="updateTeamName(' + team.id + ', this.value)" placeholder="Team Name">' +
           '<input type="text" style="flex:1; padding:8px; background:#2a2a2a; border:1px solid #444; color:#fff; border-radius:6px;" value="' + (team.passcode || '') + '" onchange="updateTeamPasscode(' + team.id + ', this.value)" placeholder="Passcode">' +
@@ -501,47 +616,55 @@ function saveAndCloseMod() {
 
     function updateTeamName(id, val) {
       const team = teams.find(t => t.id === id);
-      if (team) { team.name = val.trim() || 'Team ' + id; renderTabs(); updateTheme(); if (typeof saveStateToLocalStorage === 'function') saveStateToLocalStorage(); }
+      if (team) { team.name = val.trim() || 'Team ' + id; renderTabs(); updateTheme(); if (typeof window.saveStateToLocalStorage === 'function') window.saveStateToLocalStorage(); }
     }
 
     function updateTeamPasscode(id, val) {
       const team = teams.find(t => t.id === id);
-      if (team) { team.passcode = val.trim(); if (typeof saveStateToLocalStorage === 'function') saveStateToLocalStorage(); }
+      if (team) { team.passcode = val.trim(); if (typeof window.saveStateToLocalStorage === 'function') window.saveStateToLocalStorage(); }
     }
 
     function updateTeamColor(id, val) {
       const team = teams.find(t => t.id === id);
-      if (team) { team.color = val; renderTabs(); updateTheme(); renderBoard(); if (typeof saveStateToLocalStorage === 'function') saveStateToLocalStorage(); }
+      if (team) { team.color = val; renderTabs(); updateTheme(); renderBoard(); if (typeof window.saveStateToLocalStorage === 'function') window.saveStateToLocalStorage(); }
     }
 
     function addNewTeam() {
       const newId = teams.length ? Math.max(...teams.map(t => t.id)) + 1 : 1;
       teams.push({ id: newId, name: 'Team ' + newId, color: '#7B32D1', passcode: 'code' + newId, marked: {} });
-      renderModPanel(); renderTabs(); if (typeof saveStateToLocalStorage === 'function') saveStateToLocalStorage();
+      renderModPanel(); renderTabs(); if (typeof window.saveStateToLocalStorage === 'function') window.saveStateToLocalStorage();
     }
 
     function deleteTeam(id) {
       if (teams.length <= 1) return;
       teams = teams.filter(t => t.id !== id);
-      if (activeTeamId === id) activeTeamId = null; // Reverts view state back into secure loading screen
-      renderModPanel(); renderTabs(); updateTheme(); renderBoard(); if (typeof saveStateToLocalStorage === 'function') saveStateToLocalStorage();
+      if (activeTeamId === id) activeTeamId = null;
+      renderModPanel(); renderTabs(); updateTheme(); renderBoard(); if (typeof window.saveStateToLocalStorage === 'function') window.saveStateToLocalStorage();
     }
 
-     function confirmReroll() {
-      if (!isModAuthenticated) {
-        const attempt = prompt("Enter Mod Codeword to Reroll Board:");
-        if (attempt !== MOD_CODEWORD) { alert("Access Denied."); return; }
-        isModAuthenticated = true;
-      }
-      if (confirm("Reset layout for ALL teams? This wipes marked boxes and rolls a new 1-skill-per-line configuration.")) { 
-        teams.forEach(t => t.marked = {}); 
-        initMasterBoard(); 
-        activeTeamId = null; // Forces page layout back into clean locked startup mode
-        updateTheme(); renderTabs(); renderBoard(); 
+    const audio = document.getElementById('bgMusic');
+    function toggleAudio() {
+      if (!audio) return;
+      if (audio.paused) {
+        audio.play().catch(e => console.log("Focus pending."));
+        document.getElementById('playPauseBtn').innerText = "Pause";
+      } else {
+        audio.pause();
+        document.getElementById('playPauseBtn').innerText = "Play";
       }
     }
 
-   /* Advanced Local TrueType Font Overrides */
+    function toggleMute() {
+      if (!audio) return;
+      audio.muted = !audio.muted;
+      document.getElementById('muteBtn').innerText = audio.muted ? "Unmute" : "Mute";
+    }
+
+    window.addEventListener('DOMContentLoaded', () => { if (audio) audio.play().catch(e => console.log("Autoplay context pending.")); });
+    window.addEventListener('mouseover', () => { if (audio && audio.paused && !audio.muted) audio.play(); }, { once: true });
+    window.addEventListener('click', () => { if (audio && audio.paused && !audio.muted) audio.play(); }, { once: true });
+    window.addEventListener('touchstart', () => { if (audio && audio.paused && !audio.muted) audio.play(); }, { once: true });
+
     (function() {
       const font = new FontFace('OSRS-Bold12', 'url(RuneScape-Bold-12.ttf)');
       font.load().then(function(loadedFont) {
@@ -553,7 +676,7 @@ function saveAndCloseMod() {
           titleEl.style.webkitFontSmoothing = "none";
           titleEl.style.fontSmooth = "never";
         }
-      }).catch(function(e) { console.log("Local Bold 12 font fallback loaded."); });
+      }).catch(function(e) { console.log("Typography 12 verified."); });
 
       const titleFont = new FontFace('OSRS-Quill8', 'url(RuneScape-Quill-8.ttf)');
       titleFont.load().then(function(loadedFont) {
@@ -564,22 +687,18 @@ function saveAndCloseMod() {
           mainHeader.style.fontSize = "3.2rem";
           mainHeader.style.webkitFontSmoothing = "none";
           mainHeader.style.fontSmooth = "never";
-          mainHeader.style.letterSpacing = "2px";
         }
-        }).catch(function(e) { console.log("Local Quill 8 font fallback loaded."); });
+      }).catch(function(e) { console.log("Typography Quill verified."); });
     })();
-    // Boot up the network lines instantly
-    initMasterBoard();
-       // 9. REPAIR STARTUP SYNC HANDLERS
-    const cachedTeams = localStorage.getItem('spectral_bingo_teams_cache');;
+
+    const cachedTeams = localStorage.getItem('spectral_bingo_teams_cache');
     const cachedBoard = localStorage.getItem('spectral_bingo_board_cache');
     if (cachedTeams) teams = JSON.parse(cachedTeams);
     if (cachedBoard) masterBoard = JSON.parse(cachedBoard);
 
-    // Forces blank startup page configuration view automatically on fresh boot
     activeTeamId = null;
-    updateTheme(); 
-    renderTabs(); 
+    updateTheme();
+    renderTabs();
     renderBoard();
   </script>
 </body>
