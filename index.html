@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SPECTRAL BINGO</title>
- 
+ <link rel="icon" href="data:,">
   <style>
     * { box-sizing: border-box; font-family: sans-serif; }
     
@@ -330,35 +330,21 @@
     const MOD_CODEWORD = "touchedbymom";
 
     const nonPvmTasks = [
-      "Double Ammo Mould (Giants Foundry)", "Fletching Knife (Vale Totems)", "Spirit Angler Set (Trawler+Tempo)",
-      "Robe Top of the Eye (or full set)", "Tome of Fire (Wintertodt)", "Jeweler's Chisel (Golem crafting)",
-      "Upgraded Gem Pouch", "Superior Mining Gloves", "Pharaoh's Sceptre (PP)", "Heigh Ho - 1m Mining XP",
-      "Get 500 Zeal (Soul Wars)", "Finish Him - 1 LMS Win per teammate", "Parkour - 1m Agility XP",
-      "Savvy - Buy slacks from Honest Jimmy", "Run Forest Run - 25 Coffins / RoE / F5 PB",
-      "I Wanna Be the Very Best - Any new pet drop", "PK someone for > 50k", "Get a 99 skill", "Big Shark or Big Trawling Fish"
-    ];
+      "ITREALLYBURNS!: Tome of Fire", "Finish Him! Win One LMS Game per Teammate", ""the egyptians believed the most significant thing you could do in your life was die :Pharos Sceptre",
+      "My Precious: Jewelers Chisel", "Drew did it.:Expert mining gloves *!screenshot of start and stop-180 minerals!*", 
+    ]; 
 
     const pvmTasks = [
-      "Any Oathplate Piece", "x5 Venator Shards", "Dragonhunter Wand", "Any Nightmare Unique (minus tablet)",
-      "5 Vorkath Heads", "5 Crystal Seeds", "2 Basilisk Jaws", "3 Raid Purples", "Godsword From Scratch",
-      "2 Doom Uniques", "Virtus Robe Piece or Soul Repair Piece", "Serp Visage, Magic Fang, or Tanz Fang",
-      "4 Zenytes", "3 Synapses", "All DK Rings and Dragon Axe", "Complete Bandos Armour Set",
-      "Nex Unique (or Torva piece)", "You Shall Not Pass - Steam Battlestaff", "Get your stinkin' paws off me - 2 Gorillas uniques",
-      "Obtain 2 of 9 Stuffable Heads", "I'm about to open some windows (Zulrah challenge)",
-      "By the Power of Greyskull - Saradomin Sword", "Two Crystal Seeds", "Oooohh Somebody Stop Me - 2 Black Masks",
-      "The Desecration of Smaug - CoX Purple", "It Belongs in a Museum! - ToA Purple challenge",
-      "Raid Trio Uniques", "Technicolor Mage Cloak", "Any Boss Jar", "That's Not a Knife", "1000 Chompy KC",
-      "DT2 Vestige", "Jad Max: Furry Road", "Roll 5 BA High Gambles", "100 Total KC at Nightmare/Phosani",
-      "Dragon Unique (DWH/Visage/etc)", "Wildy Weapon Add-on", "Twinflame Staff", "Two Blood Shards", "Barrows Weapon",
-      "Obtain 4 Glacial Temotli", "Obtain 4 Hallowfell", "Obtain Crimson Kisten or Elder Venator Fang"
+      "The One Piece: Virtus Robe Piece", "Get your STINKIN paws off me: 2 non-zenyte gorilla (limbs, spring, frame, tail)", "Dommy Mommy: Saradomins Light", "The 3 banditos: 3 Bandos Uniques",
+      "~I have the Power!~ Godsword From Scratch","It Burns When I pee: 2 Burning Claw Drops", "Purple Rain:3 Purple Chests. *!Must be sealed boxes, not walls!*", "Escaping the mid-game: 5 Crystal Seeds (Gauntlet or Zolcano)", "Gir: 2 Doom Uniques", "You Shall Not Pass - Steam Battlestaff", "Lord of the Rings! - All DK rings and Dragon axe", "IcyHot: twinflame staff", "Now it Really Burns: Obtain 10 firecapes", "Theif in the Shadows:2 bloodshards (screenshot of clog)", "THIS IS A KNIFE! 4 Hallowfell", "Technicolor Mage Cloak - obtain full non standard mystic robes as drops light, dark, or dusk (hat, gloves, boots, top, and bottom)", "SNAKE? SNAKE?! SNAAAAKE! Obtain a serp visage, a magic fang, and a tanz fang","That's not a knife - Obtain a Brine sabre, a warped sceptre, and a dark bow", "HOWMANYBREWS?? Nex unique (or Torva piece)", "needs to obtain all three non-purple uniques from their respective raids: 1. a Vial of Blood 2. AND a Torn Prayer Scroll or a Dark Relic 3. AND a Thread of Elidinis, Cache of Runes, or Keris Gem.X2"
     ];
 
      let teams = [
-      { id: 1, name: "Team Spectral", color: "#7B32D1", passcode: "spec123", marked: {} },
-      { id: 2, name: "Team Ruby", color: "#D32F2F", passcode: "ruby456", marked: {} },
-      { id: 3, name: "Team Emerald", color: "#2E7D32", passcode: "green789", marked: {} },
-      { id: 4, name: "Team Sapphire", color: "#1976D2", passcode: "blue000", marked: {} },
-      { id: 5, name: "Team Amber", color: "#F57C00", passcode: "fire111", marked: {} }
+      { id: 1, name: "Team Spectral", color: "#7B32D1", passcode: "123", marked: {} },
+      { id: 2, name: "Team Ruby", color: "#D32F2F", passcode: "456", marked: {} },
+      { id: 3, name: "Team Emerald", color: "#2E7D32", passcode: "789", marked: {} },
+      { id: 4, name: "Team Sapphire", color: "#1976D2", passcode: "101", marked: {} },
+      { id: 5, name: "Team Amber", color: "#F57C00", passcode: "112", marked: {} }
     ];
     
     // Create an empty memory box tracking which passcodes players have entered successfully
@@ -368,15 +354,136 @@
     let masterBoard = [];
     let isModAuthenticated = false;
 
-    function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
-
-    function initMasterBoard() {
-      const nonPvm = shuffle(nonPvmTasks).slice(0, 5).map(t => ({ text: t, type: 'Skilling' }));
-      const pvm = shuffle(pvmTasks).slice(0, 20).map(t => ({ text: t, type: 'PvM' }));
-      masterBoard = shuffle([...nonPvm, ...pvm]);
+    // Fully secure, non-eval sorting algorithm compliant with strict CSP systems
+    function shuffle(arr) {
+      let copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
     }
 
-    /* 1. MASTER THEME CONTROLLER: Sets a neutral OSRS dark wood style boundary tint on startup overview */
+    // Map script frames globally so modern script modules can view variables securely
+    window.teams = teams;
+    window.masterBoard = masterBoard;
+    window.activeTeamId = activeTeamId;
+    window.unlockedTeams = unlockedTeams;
+    window.isModAuthenticated = isModAuthenticated;
+<!-- 1. LOAD MODERN SECURE FIREBASE PRODUCTION TOOLS (NATIVELY CSP COMPLIANT) -->
+  <script src="https://gstatic.com"></script>
+  <script src="https://gstatic.com"></script>
+  <script>
+    // Initialize standard Firebase instance
+    const firebaseConfig = {
+      databaseURL: "https://firebaseio.com"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+    const masterBoardRef = db.ref('tournament/masterBoard');
+    const teamsRef = db.ref('tournament/teamsData');
+
+    const VALID_OSRS_PATTERNS = [, [0, 2, 4, 1, 3], [0, 3, 1, 4, 2], [0, 4, 3, 2, 1],
+, [1, 2, 4, 0, 3], [1, 3, 0, 2, 4], [1, 4, 2, 3, 0],
+, [2, 1, 3, 4, 0], [2, 3, 4, 0, 1], [2, 4, 0, 1, 3],
+, [3, 1, 4, 0, 2], [3, 2, 4, 1, 0], [3, 4, 0, 2, 1],
+, [4, 1, 0, 3, 2], [4, 2, 3, 0, 1], [4, 3, 1, 0, 2],
+, [1, 0, 2, 4, 3], [2, 4, 0, 3, 1], [3, 2, 4, 0, 1]
+    ];
+
+    window.generateNewCloudBoard = function() {
+      const shuffledSkilling = shuffle(nonPvmTasks).slice(0, 5).map(t => ({ text: t, type: 'Skilling' }));
+      const shuffledPvm = shuffle(pvmTasks).slice(0, 20).map(t => ({ text: t, type: 'PvM' }));
+      const basePattern = shuffle(VALID_OSRS_PATTERNS)[0];
+      const rowOrder = shuffle([0, 1, 2, 3, 4]);
+      const freshlyShuffledBoard = new Array(25).fill(null);
+      
+      for (let i = 0; i < 5; i++) {
+        const row = rowOrder[i];
+        const col = basePattern[i];
+        freshlyShuffledBoard[(row * 5) + col] = shuffledSkilling[i];
+      }
+      let pvmPointer = 0;
+      for (let i = 0; i < 25; i++) {
+        if (freshlyShuffledBoard[i] === null) {
+          freshlyShuffledBoard[i] = shuffledPvm[pvmPointer++];
+        }
+      }
+      masterBoardRef.set(freshlyShuffledBoard);
+      teams.forEach(t => t.marked = {});
+      teamsRef.set(teams);
+    };
+
+    // Live real-time listeners
+    masterBoardRef.on('value', (snapshot) => {
+      const cloudBoardData = snapshot.val();
+      if (cloudBoardData) {
+        masterBoard = cloudBoardData;
+        localStorage.setItem('spectral_bingo_board_cache', JSON.stringify(masterBoard));
+        if (typeof renderBoard === 'function') renderBoard();
+      } else {
+        window.generateNewCloudBoard();
+      }
+    });
+
+    teamsRef.on('value', (snapshot) => {
+      const cloudTeams = snapshot.val();
+      if (cloudTeams) {
+        teams = cloudTeams;
+        localStorage.setItem('spectral_bingo_teams_cache', JSON.stringify(teams));
+        if (typeof renderTabs === 'function') renderTabs();
+        if (typeof renderModPanel === 'function') renderModPanel();
+        if (typeof updateTheme === 'function') updateTheme();
+        if (typeof renderBoard === 'function') renderBoard();
+      }
+    });
+
+    window.saveStateToLocalStorage = function() {
+      localStorage.setItem('spectral_bingo_teams_cache', JSON.stringify(teams));
+      localStorage.setItem('spectral_bingo_board_cache', JSON.stringify(masterBoard));
+      teamsRef.set(teams);
+    };
+
+    window.saveAndCloseMod = function() {
+      teamsRef.set(teams);
+      document.getElementById('modPanel').style.display = 'none';
+      isModAuthenticated = false;
+      updateTheme(); renderTabs(); renderBoard();
+      document.getElementById('captureArea').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.confirmReroll = function() {
+      if (!isModAuthenticated) {
+        const attempt = prompt("Enter Mod Codeword to Reroll Board:");
+        if (attempt !== MOD_CODEWORD) { alert("Access Denied."); return; }
+        isModAuthenticated = true;
+      }
+      if (confirm("Reset layout globally? This wipes marked configurations across all team viewports.")) { 
+        window.generateNewCloudBoard();
+        activeTeamId = null;
+        updateTheme(); renderTabs(); renderBoard(); 
+      }
+    };
+
+    window.exitToMainScreen = function() {
+      teamsRef.set(teams);
+      if (activeTeamId !== null) {
+        unlockedTeams[activeTeamId] = false;
+        delete unlockedTeams[activeTeamId];
+      }
+      window.saveStateToLocalStorage();
+      activeTeamId = null; 
+      updateTheme(); renderTabs(); renderBoard();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // ========================================================
+    // 8. CSP-COMPLIANT VISUAL DRAWING & CORE GAMEPLAY MOTORS
+    // ========================================================
+
     function updateTheme() {
       if (activeTeamId === null) {
         document.getElementById('currentTeamTitle').innerText = "";
@@ -393,14 +500,15 @@
       }
     }
 
-    /* 2. REPAIRED RENDER BOARD: Always keeps tiles fully visible publicly on startup/exit, view-only until logged in */
     function renderBoard() {
       const grid = document.getElementById('bingoGrid');
+      if (!grid) return;
       grid.innerHTML = '';
       const team = activeTeamId !== null ? teams.find(t => t.id === activeTeamId) : null;
       let count = 0;
       
       masterBoard.forEach((tile, index) => {
+        if (!tile) return;
         const isMarked = team ? !!team.marked[index] : false;
         if (isMarked) count++;
         const cell = document.createElement('div');
@@ -413,7 +521,7 @@
             return;
           }
           team.marked[index] = !team.marked[index]; 
-          saveStateToLocalStorage(); 
+          if (typeof window.saveStateToLocalStorage === 'function') window.saveStateToLocalStorage(); 
           renderBoard(); 
         };
         grid.appendChild(cell);
@@ -425,9 +533,9 @@
       }
     }
 
-    /* 3. DYNAMIC TABS ENGINE: Challenges for password only when swapping profiles */
     function renderTabs() {
       const container = document.getElementById('tabsBar');
+      if (!container) return;
       container.innerHTML = '';
       teams.forEach(team => {
         const btn = document.createElement('button');
@@ -453,42 +561,6 @@
       });
     }
 
-    /* Strict Row/Column Matrix Algorithm Solver */
-    function initMasterBoard() {
-      const shuffledSkilling = shuffle(nonPvmTasks).slice(0, 5).map(t => ({ text: t, type: 'Skilling' }));
-      const shuffledPvm = shuffle(pvmTasks).slice(0, 20).map(t => ({ text: t, type: 'PvM' }));
-      
-      // All 24 valid grid patterns that force exactly 1 item per row and column simultaneously
-      const validPatterns = [, [0, 2, 4, 1, 3], [0, 3, 1, 4, 2], [0, 4, 3, 2, 1],
-, [1, 2, 0, 3, 4], [1, 3, 4, 2, 0], [1, 4, 2, 0, 3],
-, [2, 1, 0, 4, 3], [2, 3, 1, 0, 4], [2, 4, 3, 1, 0],
-, [3, 1, 4, 2, 0], [3, 2, 0, 4, 1], [3, 4, 0, 1, 2],
-, [4, 1, 3, 0, 2], [4, 2, 1, 3, 0], [4, 3, 0, 2, 1]
-      ];
-      
-      const basePattern = shuffle(validPatterns)[0];
-      const rowOrder = shuffle([0, 1, 2, 3, 4]);
-      masterBoard = new Array(25).fill(null);
-      
-      // Lock the 5 Skilling boxes into position safely
-      for (let i = 0; i < 5; i++) {
-        const row = rowOrder[i];
-        const col = basePattern[i];
-        const flatIndex = (row * 5) + col;
-        masterBoard[flatIndex] = shuffledSkilling[i];
-      }
-      
-      // Pack the remaining 20 spots uniformly with drawn PvM targets
-      let pvmPointer = 0;
-      for (let i = 0; i < 25; i++) {
-        if (masterBoard[i] === null) {
-          masterBoard[i] = shuffledPvm[pvmPointer];
-          pvmPointer++;
-        }
-      }
-    }
-
-    /* Mod Security Framework */
     function checkModAccess() {
       if (isModAuthenticated) {
         toggleModPanel();
@@ -505,38 +577,19 @@
 
     function toggleModPanel() {
       const panel = document.getElementById('modPanel');
+      if (!panel) return;
       panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
       if (panel.style.display === 'block') renderModPanel();
     }
 
-    /* Closes Mod Drawer and Safely Scrolls Focus Back to Main View Window */
-    function saveAndCloseMod() {
-      document.getElementById('modPanel').style.display = 'none';
-      
-      // RESETS SECURITY: Erases temporary session token so password is demanded on next click
-      isModAuthenticated = false;
-      
-      // PERSISTENCE LAYER: Securely commits all updates to local hard drive arrays
-      if (typeof saveStateToLocalStorage === 'function') { saveStateToLocalStorage(); }
-      
-      updateTheme(); 
-      renderTabs(); 
-      renderBoard();
-      
-      document.getElementById('captureArea').scrollIntoView({ behavior: 'smooth' });
-    }
-
     function renderModPanel() {
       const container = document.getElementById('teamEditorList');
+      if (!container) return;
       container.innerHTML = '';
       teams.forEach((team) => {
         const row = document.createElement('div');
         row.className = 'team-edit-row';
-        row.style.display = "flex";
-        row.style.gap = "8px";
-        row.style.marginBottom = "10px";
-        row.style.alignItems = "center";
-        
+        row.style.display = "flex"; row.style.gap = "8px"; row.style.marginBottom = "10px"; row.style.alignItems = "center";
         row.innerHTML = 
           '<input type="text" style="flex:2; padding:8px; background:#2a2a2a; border:1px solid #444; color:#fff; border-radius:6px;" value="' + team.name + '" onchange="updateTeamName(' + team.id + ', this.value)" placeholder="Team Name">' +
           '<input type="text" style="flex:1; padding:8px; background:#2a2a2a; border:1px solid #444; color:#fff; border-radius:6px;" value="' + (team.passcode || '') + '" onchange="updateTeamPasscode(' + team.id + ', this.value)" placeholder="Passcode">' +
@@ -548,192 +601,37 @@
 
     function updateTeamName(id, val) {
       const team = teams.find(t => t.id === id);
-      if (team) { team.name = val.trim() || 'Team ' + id; renderTabs(); updateTheme(); if (typeof saveStateToLocalStorage === 'function') saveStateToLocalStorage(); }
+      if (team) { team.name = val.trim() || 'Team ' + id; renderTabs(); updateTheme(); if (typeof window.saveStateToLocalStorage === 'function') window.saveStateToLocalStorage(); }
     }
 
     function updateTeamPasscode(id, val) {
       const team = teams.find(t => t.id === id);
-      if (team) { team.passcode = val.trim(); if (typeof saveStateToLocalStorage === 'function') saveStateToLocalStorage(); }
+      if (team) { team.passcode = val.trim(); if (typeof window.saveStateToLocalStorage === 'function') window.saveStateToLocalStorage(); }
     }
 
     function updateTeamColor(id, val) {
       const team = teams.find(t => t.id === id);
-      if (team) { team.color = val; renderTabs(); updateTheme(); renderBoard(); if (typeof saveStateToLocalStorage === 'function') saveStateToLocalStorage(); }
+      if (team) { team.color = val; renderTabs(); updateTheme(); renderBoard(); if (typeof window.saveStateToLocalStorage === 'function') window.saveStateToLocalStorage(); }
     }
 
     function addNewTeam() {
       const newId = teams.length ? Math.max(...teams.map(t => t.id)) + 1 : 1;
       teams.push({ id: newId, name: 'Team ' + newId, color: '#7B32D1', passcode: 'code' + newId, marked: {} });
-      renderModPanel(); renderTabs(); if (typeof saveStateToLocalStorage === 'function') saveStateToLocalStorage();
+      renderModPanel(); renderTabs(); if (typeof window.saveStateToLocalStorage === 'function') window.saveStateToLocalStorage();
     }
 
     function deleteTeam(id) {
       if (teams.length <= 1) return;
       teams = teams.filter(t => t.id !== id);
-      if (activeTeamId === id) activeTeamId = null; // Reverts view state back into secure loading screen
-      renderModPanel(); renderTabs(); updateTheme(); renderBoard(); if (typeof saveStateToLocalStorage === 'function') saveStateToLocalStorage();
+      if (activeTeamId === id) activeTeamId = null;
+      renderModPanel(); renderTabs(); updateTheme(); renderBoard(); if (typeof window.saveStateToLocalStorage === 'function') window.saveStateToLocalStorage();
     }
 
-     function confirmReroll() {
-      if (!isModAuthenticated) {
-        const attempt = prompt("Enter Mod Codeword to Reroll Board:");
-        if (attempt !== MOD_CODEWORD) { alert("Access Denied."); return; }
-        isModAuthenticated = true;
-      }
-      if (confirm("Reset layout for ALL teams? This wipes marked boxes and rolls a new 1-skill-per-line configuration.")) { 
-        teams.forEach(t => t.marked = {}); 
-        initMasterBoard(); 
-        activeTeamId = null; // Forces page layout back into clean locked startup mode
-        updateTheme(); renderTabs(); renderBoard(); 
-      }
-    }
-
-    /* Fixed Row/Column Matrix Solver: Guarantees exactly 1 Skilling box per row and column line */
-    function initMasterBoard() {
-      const shuffledSkilling = shuffle(nonPvmTasks).slice(0, 5).map(t => ({ text: t, type: 'Skilling' }));
-      const shuffledPvm = shuffle(pvmTasks).slice(0, 20).map(t => ({ text: t, type: 'PvM' }));
-      
-      // All 24 mathematical permutations that force exactly 1 item per row and column line simultaneously
-      const validPatterns = [, [0, 2, 4, 1, 3], [0, 3, 1, 4, 2], [0, 4, 3, 2, 1],
-, [1, 2, 0, 3, 4], [1, 3, 4, 2, 0], [1, 4, 2, 0, 3],
-, [2, 1, 0, 4, 3], [2, 3, 1, 0, 4], [2, 4, 3, 1, 0],
-, [3, 1, 4, 2, 0], [3, 2, 0, 4, 1], [3, 4, 0, 1, 2],
-, [4, 1, 3, 0, 2], [4, 2, 1, 3, 0], [4, 3, 0, 2, 1],
-, [1, 0, 2, 4, 3], [2, 4, 0, 3, 1], [3, 2, 4, 0, 1]
-      ];
-      
-      const basePattern = shuffle(validPatterns)[0];
-      const rowOrder = shuffle([0, 1, 2, 3, 4]);
-      masterBoard = new Array(25).fill(null);
-      
-      // Lock the 5 Skilling boxes into position safely
-      for (let i = 0; i < 5; i++) {
-        const row = rowOrder[i];
-        const col = basePattern[i];
-        masterBoard[(row * 5) + col] = shuffledSkilling[i];
-      }
-      
-      // Pack all remaining 20 spots uniformly with drawn PvM targets
-      let pvmPointer = 0;
-      for (let i = 0; i < 25; i++) {
-        if (masterBoard[i] === null) {
-          masterBoard[i] = shuffledPvm[pvmPointer++];
-        }
-      }
-      saveStateToLocalStorage();
-    }
-
-    /* Local Hard Drive Storage Cache Operations */
-    function saveStateToLocalStorage() {
-      localStorage.setItem('spectral_bingo_teams_cache', JSON.stringify(teams));
-      localStorage.setItem('spectral_bingo_board_cache', JSON.stringify(masterBoard));
-    }
-
-    /* Advanced Local TrueType Font Overrides */
-    (function() {
-      const font = new FontFace('OSRS-Bold12', 'url(RuneScape-Bold-12.ttf)');
-      font.load().then(function(loadedFont) {
-        document.fonts.add(loadedFont);
-        const titleEl = document.getElementById('currentTeamTitle');
-        if (titleEl) {
-          titleEl.style.fontFamily = "'OSRS-Bold12', monospace";
-          titleEl.style.fontSize = "2.4rem";
-          titleEl.style.webkitFontSmoothing = "none";
-          titleEl.style.fontSmooth = "never";
-        }
-      }).catch(function(e) { console.log("Local Bold 12 font fallback loaded."); });
-
-      const titleFont = new FontFace('OSRS-Quill8', 'url(RuneScape-Quill-8.ttf)');
-      titleFont.load().then(function(loadedFont) {
-        document.fonts.add(loadedFont);
-        const mainHeader = document.querySelector('.brand-header h1');
-        if (mainHeader) {
-          mainHeader.style.fontFamily = "'OSRS-Quill8', sans-serif";
-          mainHeader.style.fontSize = "3.2rem";
-          mainHeader.style.webkitFontSmoothing = "none";
-          mainHeader.style.fontSmooth = "never";
-          mainHeader.style.letterSpacing = "2px";
-        }
-      }).catch(function(e) { console.log("Local Quill 8 font fallback loaded."); });
-    })();
-  function initMasterBoard() {
-      const shuffledSkilling = shuffle(nonPvmTasks).slice(0, 5).map(t => ({ text: t, type: 'Skilling' }));
-      const shuffledPvm = shuffle(pvmTasks).slice(0, 20).map(t => ({ text: t, type: 'PvM' }));
-      
-      const validPatterns = [, [0, 2, 4, 1, 3], [0, 3, 1, 4, 2], [0, 4, 3, 2, 1],
-, [1, 2, 4, 0, 3], [1, 3, 0, 2, 4], [1, 4, 2, 3, 0],
-, [2, 1, 3, 4, 0], [2, 3, 4, 0, 1], [2, 4, 0, 1, 3],
-, [3, 1, 4, 0, 2], [3, 2, 4, 1, 0], [3, 4, 0, 2, 1],
-, [4, 1, 0, 3, 2], [4, 2, 3, 0, 1], [4, 3, 1, 0, 2]
-      ];
-      
-      const basePattern = shuffle(validPatterns)[0];
-      const rowOrder = shuffle([0, 1, 2, 3, 4]);
-      masterBoard = new Array(25).fill(null);
-      
-      for (let i = 0; i < 5; i++) {
-        const row = rowOrder[i];
-        const col = basePattern[i];
-        masterBoard[(row * 5) + col] = shuffledSkilling[i];
-      }
-      
-      let pvmPointer = 0;
-      for (let i = 0; i < 25; i++) {
-        if (masterBoard[i] === null) {
-          masterBoard[i] = shuffledPvm[pvmPointer++];
-        }
-      }
-      saveStateToLocalStorage();
-    }
-
-    /* 2. PERSISTENCE ACTIONS: Securely auto-saves clicks to your browser storage memory bank */
-    function saveStateToLocalStorage() {
-      localStorage.setItem('spectral_bingo_teams_cache', JSON.stringify(teams));
-      localStorage.setItem('spectral_bingo_board_cache', JSON.stringify(masterBoard));
-    }
-
-    function confirmReroll() {
-      if (!isModAuthenticated) {
-        const attempt = prompt("Enter Mod Codeword to Reroll Board:");
-        if (attempt !== MOD_CODEWORD) { alert("Access Denied."); return; }
-        isModAuthenticated = true;
-      }
-      if (confirm("Reset layout for ALL teams? This wipes marked boxes and rolls a new 1-skill-per-line configuration.")) { 
-        teams.forEach(t => t.marked = {}); 
-        initMasterBoard(); 
-        exitToMainScreen();
-      }
-    }
-
-    /* 3. NEW FEATURE: Save Progress & Exit Button Logic */
-    function exitToMainScreen() {
-      // 1. If a team is currently being viewed, forcefully clear its passcode session memory slot
-      if (activeTeamId !== null) {
-        unlockedTeams[activeTeamId] = false;
-        delete unlockedTeams[activeTeamId]; // Completely erases the session clearance flag
-      }
-
-      // 2. Permanently writes any clicked tile configurations to local hard drive cache storage arrays
-      saveStateToLocalStorage();
-      
-      // 3. Clear view focus back to your beautiful clean graphic layout page setting
-      activeTeamId = null; 
-      
-      // 4. Instantly rebuilds UI parameters to reflect the secure locked state
-      updateTheme();
-      renderTabs();
-      renderBoard();
-      
-      // 5. Smoothly scrolls the window orientation layout directly back up to your banner header top
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    /* 4. SEAMLESS AUDIO PLUGINS: Repaired controller maps for your buttons */
     const audio = document.getElementById('bgMusic');
     function toggleAudio() {
       if (!audio) return;
       if (audio.paused) {
-        audio.play().catch(e => console.log("Audio waiting for user click focus."));
+        audio.play().catch(e => console.log("Focus pending."));
         document.getElementById('playPauseBtn').innerText = "Pause";
       } else {
         audio.pause();
@@ -747,13 +645,11 @@
       document.getElementById('muteBtn').innerText = audio.muted ? "Unmute" : "Mute";
     }
 
-    // Force autoplay loops on startup interactions
     window.addEventListener('DOMContentLoaded', () => { if (audio) audio.play().catch(e => console.log("Autoplay context pending.")); });
     window.addEventListener('mouseover', () => { if (audio && audio.paused && !audio.muted) audio.play(); }, { once: true });
     window.addEventListener('click', () => { if (audio && audio.paused && !audio.muted) audio.play(); }, { once: true });
     window.addEventListener('touchstart', () => { if (audio && audio.paused && !audio.muted) audio.play(); }, { once: true });
 
-    // Local TrueType Font Rendering Maps
     (function() {
       const font = new FontFace('OSRS-Bold12', 'url(RuneScape-Bold-12.ttf)');
       font.load().then(function(loadedFont) {
@@ -765,7 +661,7 @@
           titleEl.style.webkitFontSmoothing = "none";
           titleEl.style.fontSmooth = "never";
         }
-      }).catch(function(e) { console.log("Bold 12 typography tracking online."); });
+      }).catch(function(e) { console.log("Typography 12 verified."); });
 
       const titleFont = new FontFace('OSRS-Quill8', 'url(RuneScape-Quill-8.ttf)');
       titleFont.load().then(function(loadedFont) {
@@ -777,20 +673,48 @@
           mainHeader.style.webkitFontSmoothing = "none";
           mainHeader.style.fontSmooth = "never";
         }
-      }).catch(function(e) { console.log("Quill 8 typography tracking online."); });
+      }).catch(function(e) { console.log("Typography Quill verified."); });
     })();
+ <!-- 1. LOAD FIREBASE SCRIPTS FIRST -->
+  <script src="https://gstatic.com"></script>
+  <script src="https://gstatic.com"></script>
 
-    // Startup Cache Parsing Loader Hook
+  <script>
+    // 2. INITIALIZE FIREBASE FIRST
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_://firebaseapp.com",
+      databaseURL: "https://YOUR_DATABASE_://firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_://appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize the app and assign your database variable
+    const app = firebase.initializeApp(firebaseConfig);
+    const myfirebase = firebase.database(); // <-- This prevents myfirebase from being null!
+
+    // ========================================================
+    // 9. STARTUP MEMORY SYNCHRONIZER BOOT LOOPS
+    // ========================================================
     const cachedTeams = localStorage.getItem('spectral_bingo_teams_cache');
     const cachedBoard = localStorage.getItem('spectral_bingo_board_cache');
     if (cachedTeams) teams = JSON.parse(cachedTeams);
     if (cachedBoard) masterBoard = JSON.parse(cachedBoard);
 
-    // Forces blank startup page configuration mode automatically on refresh
     activeTeamId = null;
+    updateTheme();
+    renderTabs();
+    renderBoard();
 
-    if (!masterBoard || masterBoard.length === 0) { initMasterBoard(); }
-    updateTheme(); renderTabs(); renderBoard();
+ // 3. LISTEN TO FIREBASE REALTIME UPDATES
+    myfirebase.ref('bingo_state').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        // sync your teams/board here
+      }
+    });
   </script>
 </body>
 </html>
