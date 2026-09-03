@@ -330,27 +330,13 @@
     const MOD_CODEWORD = "touchedbymom";
 
     const nonPvmTasks = [
-      "Double Ammo Mould (Giants Foundry)", "Fletching Knife (Vale Totems)", "Spirit Angler Set (Trawler+Tempo)",
-      "Robe Top of the Eye (or full set)", "Tome of Fire (Wintertodt)", "Jeweler's Chisel (Golem crafting)",
-      "Upgraded Gem Pouch", "Superior Mining Gloves", "Pharaoh's Sceptre (PP)", "Heigh Ho - 1m Mining XP",
-      "Get 500 Zeal (Soul Wars)", "Finish Him - 1 LMS Win per teammate", "Parkour - 1m Agility XP",
-      "Savvy - Buy slacks from Honest Jimmy", "Run Forest Run - 25 Coffins / RoE / F5 PB",
-      "I Wanna Be the Very Best - Any new pet drop", "PK someone for > 50k", "Get a 99 skill", "Big Shark or Big Trawling Fish"
-    ];
+      "ITREALLYBURNS!: Tome of Fire", "Finish Him! Win One LMS Game per Teammate", ""the egyptians believed the most significant thing you could do in your life was die :Pharos Sceptre",
+      "My Precious: Jewelers Chisel", "9 out of 10 voices in my head say I’m crazy. The 10th is humming.:Expert mining gloves *!screenshot of start and stop-140 minerals!*", 
+    ]; 
 
     const pvmTasks = [
-      "Any Oathplate Piece", "x5 Venator Shards", "Dragonhunter Wand", "Any Nightmare Unique (minus tablet)",
-      "5 Vorkath Heads", "5 Crystal Seeds", "2 Basilisk Jaws", "3 Raid Purples", "Godsword From Scratch",
-      "2 Doom Uniques", "Virtus Robe Piece or Soul Repair Piece", "Serp Visage, Magic Fang, or Tanz Fang",
-      "4 Zenytes", "3 Synapses", "All DK Rings and Dragon Axe", "Complete Bandos Armour Set",
-      "Nex Unique (or Torva piece)", "You Shall Not Pass - Steam Battlestaff", "Get your stinkin' paws off me - 2 Gorillas uniques",
-      "Obtain 2 of 9 Stuffable Heads", "I'm about to open some windows (Zulrah challenge)",
-      "By the Power of Greyskull - Saradomin Sword", "Two Crystal Seeds", "Oooohh Somebody Stop Me - 2 Black Masks",
-      "The Desecration of Smaug - CoX Purple", "It Belongs in a Museum! - ToA Purple challenge",
-      "Raid Trio Uniques", "Technicolor Mage Cloak", "Any Boss Jar", "That's Not a Knife", "1000 Chompy KC",
-      "DT2 Vestige", "Jad Max: Furry Road", "Roll 5 BA High Gambles", "100 Total KC at Nightmare/Phosani",
-      "Dragon Unique (DWH/Visage/etc)", "Wildy Weapon Add-on", "Twinflame Staff", "Two Blood Shards", "Barrows Weapon",
-      "Obtain 4 Glacial Temotli", "Obtain 4 Hallowfell", "Obtain Crimson Kisten or Elder Venator Fang"
+      "The One Piece: Virtus Robe Piece", "Get your paws off me: 2 non-zenyte gorilla (limbs, spring, frame, tail)", "Dommy Mommy: Saradomins Light", "The 3 banditos: 3 Bandos Uniques",
+      "~I have the Power!~ Godsword From Scratch","It Burns When I pee: 2 Burning Claw Drops", "Purple Rain:3 Purple Chests. *!Must be sealed boxes, not walls!*", "Escaping the mid-game: 5 Crystal Seeds (Gauntlet or Zolcano)", "Gir: 2 Doom Uniques", "You Shall Not Pass - Steam Battlestaff", "Lord of the Rings! - All DK rings and Dragon axe", "IcyHot: twinflame staff", "Now it Really Burns: Obtain 10 firecapes", "Theif in the Shadows:2 bloodshards (screenshot of clog)", "THIS IS A KNIFE! 4 Hallowfell", "Technicolor Mage Cloak - obtain full non standard mystic robes as drops light, dark, or dusk (hat, gloves, boots, top, and bottom)", "SNAKE? SNAKE?! SNAAAAKE! Obtain a serp visage, a magic fang, and a tanz fang","That's not a knife - Obtain a Brine sabre, a warped sceptre, and a dark bow", "HOWMANYBREWS?? Nex unique (or Torva piece)", "needs to obtain all three non-purple uniques from their respective raids: 1. a Vial of Blood 2. AND a Torn Prayer Scroll or a Dark Relic 3. AND a Thread of Elidinis, Cache of Runes, or Keris Gem.X2"
     ];
 
      let teams = [
@@ -689,6 +675,25 @@
         }
       }).catch(function(e) { console.log("Typography Quill verified."); });
     })();
+ <!-- 1. LOAD FIREBASE SCRIPTS FIRST -->
+  <script src="https://gstatic.com"></script>
+  <script src="https://gstatic.com"></script>
+
+  <script>
+    // 2. INITIALIZE FIREBASE FIRST
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_://firebaseapp.com",
+      databaseURL: "https://YOUR_DATABASE_://firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_://appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize the app and assign your database variable
+    const app = firebase.initializeApp(firebaseConfig);
+    const myfirebase = firebase.database(); // <-- This prevents myfirebase from being null!
 
     // ========================================================
     // 9. STARTUP MEMORY SYNCHRONIZER BOOT LOOPS
@@ -702,6 +707,14 @@
     updateTheme();
     renderTabs();
     renderBoard();
+
+ // 3. LISTEN TO FIREBASE REALTIME UPDATES
+    myfirebase.ref('bingo_state').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        // sync your teams/board here
+      }
+    });
   </script>
 </body>
 </html>
